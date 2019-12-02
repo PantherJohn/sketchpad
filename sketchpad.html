@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sketchpad</title>
+<style>
+    body, html { margin: 0; padding: 0; }
+</style>
+</head>
+<body></body>
+<script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous">
+</script>
+<script>
+    $(document).ready(function() {
+        var paint = false;
+        var clickX = [], clickY = [], clickDrag = [];
+        var canvas = $('<canvas>', {
+            background: 'white',
+            cursor: 'pointer'
+        }).appendTo($('body'));
+        var context = canvas[0].getContext("2d");
+        var w = $(window);
+
+        function addClick(x, y, dragging) {
+            clickX.push(x);
+            clickY.push(y);
+            clickDrag.push(dragging);
+        }
+
+        function redraw() {
+            context.fillStyle = "#fff";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.strokeStyle = "#df4b26";
+            context.lineJoin = "round";
+            context.lineWidth = 5;
+
+            for(var i = 0; i < clickX.length; i++) {
+                context.beginPath();
+                if(clickDrag[i] && i){
+                    context.moveTo(clickX[i - 1], clickY[i - 1]);
+                } else {
+                    context.moveTo(clickX[i] - 1, clickY[i]);
+                }
+                context.lineTo(clickX[i], clickY[i]);
+                context.closePath();
+                context.stroke();
+            }
+        }
+
+        function resize() {
+            canvas.attr({
+                width: w.width(),
+                height: w.height()
+            });
+        }
+
+        function trace(e, ctx) {
+            addClick(e.pageX - ctx.offsetLeft,
+                     e.pageY - ctx.offsetTop, true);
+            redraw();
+        }
+
+        $("#eraser").on('click', function() {
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+            clickX = []; clickY = []; clickDrag = [];
+        });
+
+        $(document).on('keydown', function(e) {
+            paint = true; trace(e, this);
+        }).on('keyup', function() { paint = false; });
+
+        canvas.on('mousemove', function(e) {
+            if (paint) trace(e, this);
+        }).on('mouseleave', function() { paint = false; });
+
+        w.resize(resize).resize();
+
+        var height = canvas.height();
+        w.scroll(function() {
+            if(w.scrollTop() + w.height() == $(document).height()) {
+                canvas.attr('height', height *= 2);
+            }
+        });
+    });
+</script>
+</html>
+
