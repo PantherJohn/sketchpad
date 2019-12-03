@@ -77,12 +77,16 @@
             clickX = []; clickY = []; clickDrag = [];
         });
 
+        document.addEventListener(
+            "touchstart", function(e) {
+                e.preventDefault();
+        }, { passive: false });
+
         $(document).on('touchstart keydown', function(e) {
             paint = true; trace(e, this);
         }).on('touchend keyup', function() { paint = false; });
 
         canvas.on('touchmove mousemove', function(e) {
-            if (e.type == 'touchmove') e.preventDefault();
             if (paint) trace(e, this);
         }).on('touchcancel mouseleave', function() { paint = false; });
 
