@@ -21,6 +21,7 @@
             cursor: 'pointer'
         }).appendTo($('body'));
         var context = canvas[0].getContext("2d");
+        var dpr = window.devicePixelRatio || 1;
         var w = $(window);
 
         function addClick(x, y, dragging) {
@@ -34,7 +35,7 @@
             context.fillRect(0, 0, canvas.width, canvas.height);
             context.strokeStyle = "#df4b26";
             context.lineJoin = "round";
-            context.lineWidth = 5;
+            context.lineWidth = 2;
 
             for(var i = 0; i < clickX.length; i++) {
                 context.beginPath();
@@ -51,9 +52,13 @@
 
         function resize() {
             canvas.attr({
+                width: w.width() * dpr,
+                height: w.height() * dpr
+            }).css({
                 width: w.width(),
                 height: w.height()
             });
+            context.scale(dpr, dpr);
         }
 
         function trace(e, ctx) {
@@ -79,7 +84,7 @@
 
         var height = canvas.height();
         w.scroll(function() {
-            if(w.scrollTop() + w.height() == $(document).height()) {
+            if (w.scrollTop() + w.height() == $(document).height()) {
                 canvas.attr('height', height *= 2);
             }
         });
