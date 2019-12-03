@@ -17,10 +17,12 @@
         var paint = false;
         var clickX = [], clickY = [], clickDrag = [];
         var canvas = $('<canvas>', {
-            background: 'white',
             cursor: 'pointer'
         }).appendTo($('body'));
-        var context = canvas[0].getContext("2d");
+        var context = canvas[0].getContext("2d", {
+            antialias: true
+        });
+
         var dpr = window.devicePixelRatio || 1;
         var w = $(window);
 
@@ -37,9 +39,9 @@
             context.lineJoin = "round";
             context.lineWidth = 2;
 
-            for(var i = 0; i < clickX.length; i++) {
+            for (var i = 0; i < clickX.length; i++) {
                 context.beginPath();
-                if(clickDrag[i] && i){
+                if (clickDrag[i] && i){
                     context.moveTo(clickX[i - 1], clickY[i - 1]);
                 } else {
                     context.moveTo(clickX[i] - 1, clickY[i]);
@@ -50,15 +52,18 @@
             }
         }
 
-        function resize() {
+        function resize(width, height) {
             canvas.attr({
-                width: w.width() * dpr,
-                height: w.height() * dpr
+                width: width * dpr,
+                height: height * dpr
             }).css({
-                width: w.width(),
-                height: w.height()
+                width: width, height: height
             });
             context.scale(dpr, dpr);
+        }
+
+        function fit() {
+            resize(w.width(), w.height());
         }
 
         function trace(e, ctx) {
@@ -68,24 +73,25 @@
         }
 
         $("#eraser").on('click', function() {
-            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+            context.clearRect(0, 0, canvas.width(), canvas.height());
             clickX = []; clickY = []; clickDrag = [];
         });
 
-        $(document).on('keydown', function(e) {
+        $(document).on('touchstart keydown', function(e) {
             paint = true; trace(e, this);
-        }).on('keyup', function() { paint = false; });
+        }).on('touchend keyup', function() { paint = false; });
 
-        canvas.on('mousemove', function(e) {
+        canvas.on('touchmove mousemove', function(e) {
             if (paint) trace(e, this);
-        }).on('mouseleave', function() { paint = false; });
+        }).on('touchcancel mouseleave', function() { paint = false; });
 
-        w.resize(resize).resize();
+        w.resize(fit).resize();
 
         var height = canvas.height();
+        var threshold = 0.01;
         w.scroll(function() {
-            if (w.scrollTop() + w.height() == $(document).height()) {
-                canvas.attr('height', height *= 2);
+            if (w.scrollTop() + w.height() == $(document).height() * (1 + threshold)) {
+                resize(canvas.width(), height *= 2);
             }
         });
     });
