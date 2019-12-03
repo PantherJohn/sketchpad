@@ -82,6 +82,7 @@
         }).on('touchend keyup', function() { paint = false; });
 
         canvas.on('touchmove mousemove', function(e) {
+            if (e.type == 'touchmove') e.preventDefault();
             if (paint) trace(e, this);
         }).on('touchcancel mouseleave', function() { paint = false; });
 
